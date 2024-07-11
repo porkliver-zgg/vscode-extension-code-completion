@@ -20,11 +20,6 @@ const scan = async (document: vscode.TextDocument) => {
 		vscode.window.activeTextEditor?.document.uri
 	);
 
-	const a = await vscode.commands.executeCommand(
-		'vscode.executeWorkspaceSymbolProvider',
-		'func2'
-	);
-
 
 	const arr = (docSymbols as any).filter((symbol: vscode.SymbolInformation) => symbol.kind === vscode.SymbolKind.Function);
 
