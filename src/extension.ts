@@ -11,6 +11,33 @@ interface methodData {
 let methodSet: { [key: string]: methodData } = {};
 let throttleIds: any = {};
 
+const checkIsSetMethod = async function (symbol: any) {
+	if (symbol.name.includes('setMethod(')) {
+		const match = symbol.name.match(/setMethod\('(\w+)'/);
+		const methodName = match[1];
+
+		const hoverData = await vscode.commands.executeCommand(
+			'vscode.executeHoverProvider',
+			vscode.window.activeTextEditor?.document.uri,
+			symbol.location.range.start,
+		);
+		if ((hoverData as any).length > 0) {
+			const hoverText = (hoverData as any)[0].contents[0].value;
+			const arr = hoverText.split('\n');
+			const text = arr[2].split('(local function)')[1];
+
+			methodSet[methodName] = {
+				text,
+				position: symbol.location.range.start
+			};
+		}
+	}
+
+	for (const child of (symbol.children as any)) {
+		await checkIsSetMethod(child);
+	}
+};
+
 const scan = async (document: vscode.TextDocument) => {
 	methodSet = {};
 
@@ -24,26 +51,7 @@ const scan = async (document: vscode.TextDocument) => {
 	const arr = (docSymbols as any).filter((symbol: vscode.SymbolInformation) => symbol.kind === vscode.SymbolKind.Function);
 
 	for (const symbol of arr) {
-		if (symbol.name.includes('setMethod(')) {
-			const match = symbol.name.match(/setMethod\('(\w+)'/);
-			const methodName = match[1];
-
-			const hoverData = await vscode.commands.executeCommand(
-				'vscode.executeHoverProvider',
-				vscode.window.activeTextEditor?.document.uri,
-				symbol.location.range.start,
-			);
-			if ((hoverData as any).length > 0) {
-				const hoverText = (hoverData as any)[0].contents[0].value;
-				const arr = hoverText.split('\n');
-				const text = arr[2].split('(local function)')[1];
-
-				methodSet[methodName] = {
-					text,
-					position: symbol.location.range.start
-				};
-			}
-		}
+		await checkIsSetMethod(symbol);
 	}
 };
 
@@ -208,6 +216,8 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 		}),
 	);
+
+
 
 }
 

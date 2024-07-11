@@ -2,13 +2,18 @@
   "name": "static-analysis-demo",
   "displayName": "static analysis demo",
   "description": "",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "engines": {
     "vscode": "^1.91.0"
   },
   "categories": [
     "Other"
   ],
+  "publisher": "porkliver",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/porkliver-zgg/vscode-extension-code-completion"
+  },
   "activationEvents": [
     "onStartupFinished"
   ],
