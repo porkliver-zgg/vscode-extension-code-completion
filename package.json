@@ -2,9 +2,9 @@
   "name": "static-analysis-demo",
   "displayName": "static analysis demo",
   "description": "",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "engines": {
-    "vscode": "^1.91.0"
+    "vscode": "^1.73.0"
   },
   "categories": [
     "Other"
@@ -28,7 +28,7 @@
     "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/vscode": "^1.91.0",
+    "@types/vscode": "^1.73.0",
     "@types/mocha": "^10.0.7",
     "@types/node": "20.x",
     "@typescript-eslint/eslint-plugin": "^7.14.1",
