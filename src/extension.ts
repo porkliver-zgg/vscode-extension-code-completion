@@ -122,7 +122,7 @@ export function activate(context: vscode.ExtensionContext) {
 		return completionItems;
 	};
 
-	const signature = async function (document: vscode.TextDocument, position: vscode.Position) {
+	const signature = async function (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.SignatureHelpContext) {
 		const linePrefix = document.lineAt(position).text.slice(0, position.character);
 
 		const match = linePrefix.match(/getMethod\('(\w+)'\)\(/);
@@ -150,11 +150,21 @@ export function activate(context: vscode.ExtensionContext) {
 						new vscode.MarkdownString('正在测试正在测试正在测试')
 					);
 					signature.label = text;
-					signature.activeParameter = 0;
-					signature.parameters = [
-						new vscode.ParameterInformation('param1', 'The first parameter'),
-						new vscode.ParameterInformation('param2', 'The second parameter'),
-					];
+
+					const splitText = (text.split(')')[0]).split(',');
+
+					const parameterInformationLis = [];
+					let index = 1;
+					for (const str of splitText) {
+						parameterInformationLis.push(new vscode.ParameterInformation([index, index + str.length + (str[0] === '(' ? -1 : 0)]));
+						index += str.length;
+					}
+
+					signature.parameters = parameterInformationLis;
+
+					const parts = linePrefix.split(',');
+					signature.activeParameter = parts.length - 1;
+
 
 					const signatureHelp = new vscode.SignatureHelp();
 					signatureHelp.signatures = [signature];
@@ -190,14 +200,14 @@ export function activate(context: vscode.ExtensionContext) {
 		{
 			provideSignatureHelp: signature
 		},
-		'(' // triggered whenever a '(' is being typed
+		'(',  // triggered whenever a '(' is being typed
 	);
 	const useMethodProviderTS = vscode.languages.registerSignatureHelpProvider(
 		'typescript',
 		{
 			provideSignatureHelp: signature
 		},
-		'(' // triggered whenever a '(' is being typed
+		'(', // triggered whenever a '(' is being typed
 	);
 
 	const goToDefinition = vscode.languages.registerDefinitionProvider(
