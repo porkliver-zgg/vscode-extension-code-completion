@@ -98,7 +98,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 		const linePrefix = document.lineAt(position).text.slice(0, position.character);
 
-		if (!linePrefix.endsWith('getMethod(')) {
+		if (!(linePrefix.endsWith('getMethod(') || linePrefix.endsWith("getMethod('"))) {
 			return undefined;
 		}
 
@@ -114,7 +114,11 @@ export function activate(context: vscode.ExtensionContext) {
 			const { line, character } = data.variablePosition;
 			if (line === variablePosition[0].targetSelectionRange.start.line && character === variablePosition[0].targetSelectionRange.start.character) {
 				const completionItem = new vscode.CompletionItem(data.name, vscode.CompletionItemKind.Function);
-				completionItem.insertText = new vscode.SnippetString(`\'${data.name}\'`);
+				if (linePrefix[linePrefix.length - 1] === '(') {
+					completionItem.insertText = new vscode.SnippetString(`\'${data.name}\'`);
+				} else {
+					completionItem.insertText = new vscode.SnippetString(data.name);
+				}
 				completionItems.push(completionItem);
 			}
 		}
@@ -185,14 +189,16 @@ export function activate(context: vscode.ExtensionContext) {
 		{
 			provideCompletionItems: completion
 		},
-		'(' // triggered whenever a '(' is being typed
+		"'",
+		'('
 	);
 	const getMethodProviderTS = vscode.languages.registerCompletionItemProvider(
 		'typescript',
 		{
 			provideCompletionItems: completion
 		},
-		'(' // triggered whenever a '(' is being typed
+		"'",
+		'('
 	);
 
 	const useMethodProviderJS = vscode.languages.registerSignatureHelpProvider(
@@ -200,14 +206,16 @@ export function activate(context: vscode.ExtensionContext) {
 		{
 			provideSignatureHelp: signature
 		},
-		'(',  // triggered whenever a '(' is being typed
+		',',
+		'(',
 	);
 	const useMethodProviderTS = vscode.languages.registerSignatureHelpProvider(
 		'typescript',
 		{
 			provideSignatureHelp: signature
 		},
-		'(', // triggered whenever a '(' is being typed
+		',',
+		'(',
 	);
 
 	const goToDefinition = vscode.languages.registerDefinitionProvider(
@@ -222,8 +230,20 @@ export function activate(context: vscode.ExtensionContext) {
 					const characterIndex = text.indexOf(name);
 
 					if (position.character >= characterIndex && position.character <= characterIndex + name.length) {
+
+						const variablePosition: Array<any> = await vscode.commands.executeCommand(
+							'vscode.executeDefinitionProvider',
+							document.uri,
+							{ line: position.line, character: text.indexOf('.') }
+						);
+
 						for (const data of methodSet) {
-							if (data.name === name) {
+							const { line, character } = data.variablePosition;
+							if (
+								data.name === name &&
+								line === variablePosition[0].targetSelectionRange.start.line &&
+								character === variablePosition[0].targetSelectionRange.start.character
+							) {
 								return new vscode.Location(
 									document.uri,
 									data.position
