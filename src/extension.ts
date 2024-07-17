@@ -149,7 +149,6 @@ const generatreSignature = (position: vscode.Position, methodName: string, lineP
 
 			const splitText = (text.split('):')[0]).split(',');
 			splitText[0] = splitText[0].slice(1);
-			console.log(splitText);
 
 			const parameterInformationLis = [];
 			let index = 1;
